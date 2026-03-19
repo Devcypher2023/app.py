@@ -1,5 +1,0 @@
-aws_region         = "us-east-1"
-instance_type      = "t2.micro"
-key_name           = "cicd"
-my_ip              = "174.126.13.10/32"
-dockerhub_username = "devcypher2023"
