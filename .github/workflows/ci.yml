@@ -23,11 +23,17 @@ jobs:
           ls -la app || true
           echo "----- terraform folder -----"
           ls -la terraform || true
-          echo "----- workflows folder -----"
-          ls -la .github/workflows || true
 
       - name: Validate required app files
         run: |
           test -f app/app.py
           test -f app/requirements.txt
           test -f app/Dockerfile
+
+      - name: Validate required terraform files
+        run: |
+          test -f terraform/main.tf
+          test -f terraform/variables.tf
+          test -f terraform/provider.tf
+          test -f terraform/versions.tf
+          test -f terraform/outputs.tf
