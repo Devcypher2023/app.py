@@ -55,4 +55,22 @@ jobs:
       - name: Verify script exists on EC2
         run: |
           ssh -i private_key.pem -o StrictHostKeyChecking=no \
-          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "ls -l /home/ec2-user/deploy.sh"      
+          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "ls -l /home/ec2-user/deploy.sh"
+
+  test-run-deploy-script:
+    runs-on: ubuntu-latest
+    needs: copy-deploy-script
+
+    steps:
+      - name: Create SSH key file
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" > private_key.pem
+          chmod 600 private_key.pem
+
+      - name: Make script executable and test it
+        run: |
+          ssh -i private_key.pem -o StrictHostKeyChecking=no \
+          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "
+            chmod +x /home/ec2-user/deploy.sh &&
+            /home/ec2-user/deploy.sh
+          "              
