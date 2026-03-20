@@ -1,0 +1,19 @@
+name: Deploy to EC2
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  validate-deploy-inputs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check required secrets exist
+        run: |
+          test -n "${{ secrets.EC2_HOST }}"
+          test -n "${{ secrets.EC2_USER }}"
+          test -n "${{ secrets.EC2_SSH_KEY }}"
+          test -n "${{ secrets.DOCKERHUB_USERNAME }}"
