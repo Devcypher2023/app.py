@@ -17,3 +17,18 @@ jobs:
           test -n "${{ secrets.EC2_USER }}"
           test -n "${{ secrets.EC2_SSH_KEY }}"
           test -n "${{ secrets.DOCKERHUB_USERNAME }}"
+
+  test-ssh-connection:
+    runs-on: ubuntu-latest
+    needs: validate-deploy-inputs
+
+    steps:
+      - name: Create SSH key file
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" > private_key.pem
+          chmod 600 private_key.pem
+
+      - name: Test SSH connection
+        run: |
+          ssh -i private_key.pem -o StrictHostKeyChecking=no \
+          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "echo SSH connection successful"        
