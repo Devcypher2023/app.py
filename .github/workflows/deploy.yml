@@ -80,5 +80,5 @@ jobs:
           ssh -i private_key.pem -o StrictHostKeyChecking=no \
           ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "
             chmod +x /home/ec2-user/deploy.sh &&
-            /home/ec2-user/deploy.sh ${{ secrets.DOCKERHUB_USERNAME }}/standardized-cicd-app:${GITHUB_SHA::7}
+            /home/ec2-user/deploy.sh ${{ secrets.DOCKERHUB_USERNAME }}/standardized-cicd-app:latest
           "
