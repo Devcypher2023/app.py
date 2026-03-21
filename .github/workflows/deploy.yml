@@ -5,10 +5,15 @@ on:
     workflows: ["CI Pipeline"]
     types:
       - completed
- 
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Docker image tag to deploy manually (for rollback)"
+        required: true
+
 jobs:
   validate-deploy-inputs:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -26,11 +31,15 @@ jobs:
       image_tag: ${{ steps.set_tag.outputs.image_tag }}
 
     steps:
-      - name: Set image tag from CI run
+      - name: Determine image tag
         id: set_tag
         run: |
-          SHORT_SHA=$(echo "${{ github.event.workflow_run.head_sha }}" | cut -c1-7)
-          echo "image_tag=$SHORT_SHA" >> $GITHUB_OUTPUT
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "image_tag=${{ github.event.inputs.image_tag }}" >> $GITHUB_OUTPUT
+          else
+            SHORT_SHA=$(echo "${{ github.event.workflow_run.head_sha }}" | cut -c1-7)
+            echo "image_tag=$SHORT_SHA" >> $GITHUB_OUTPUT
+          fi
 
   test-ssh-connection:
     runs-on: ubuntu-latest
@@ -101,4 +110,4 @@ jobs:
         run: |
           RESPONSE=$(curl -s http://${{ secrets.EC2_HOST }}:5000/health)
           echo "$RESPONSE"
-          echo "$RESPONSE" | grep "${{ needs.prepare-release.outputs.image_tag }}" 
+          echo "$RESPONSE" | grep "${{ needs.prepare-release.outputs.image_tag }}"
