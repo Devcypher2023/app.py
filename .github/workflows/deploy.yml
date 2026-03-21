@@ -88,9 +88,17 @@ jobs:
 
   verify-deployment:
     runs-on: ubuntu-latest
-    needs: deploy-to-ec2
+    needs:
+      - deploy-to-ec2
+      - prepare-release
 
     steps:
       - name: Verify app health from outside EC2
         run: |
-          curl -f http://${{ secrets.EC2_HOST }}:5000/health 
+          curl -f http://${{ secrets.EC2_HOST }}:5000/health
+
+      - name: Verify deployed version matches expected image tag
+        run: |
+          RESPONSE=$(curl -s http://${{ secrets.EC2_HOST }}:5000/health)
+          echo "$RESPONSE"
+          echo "$RESPONSE" | grep "${{ needs.prepare-release.outputs.image_tag }}" 
