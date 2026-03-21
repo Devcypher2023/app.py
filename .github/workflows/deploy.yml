@@ -26,9 +26,11 @@ jobs:
       image_tag: ${{ steps.set_tag.outputs.image_tag }}
 
     steps:
-      - name: Set image tag
+      - name: Set image tag from CI run
         id: set_tag
-        run: echo "image_tag=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+        run: |
+          SHORT_SHA=$(echo "${{ github.event.workflow_run.head_sha }}" | cut -c1-7)
+          echo "image_tag=$SHORT_SHA" >> $GITHUB_OUTPUT
 
   test-ssh-connection:
     runs-on: ubuntu-latest
@@ -81,7 +83,7 @@ jobs:
           ssh -i private_key.pem -o StrictHostKeyChecking=no \
           ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "
             chmod +x /home/ec2-user/deploy.sh &&
-            /home/ec2-user/deploy.sh ${{ secrets.DOCKERHUB_USERNAME }}/standardized-cicd-app:latest
+            /home/ec2-user/deploy.sh ${{ secrets.DOCKERHUB_USERNAME }}/standardized-cicd-app:${{ needs.prepare-release.outputs.image_tag }}
           "
 
   verify-deployment:
