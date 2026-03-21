@@ -1,13 +1,14 @@
 name: Deploy to EC2
 
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
-
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types:
+      - completed
+ 
 jobs:
   validate-deploy-inputs:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
