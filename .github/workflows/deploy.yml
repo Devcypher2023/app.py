@@ -2,11 +2,6 @@ name: Deploy to EC2
 
 on:
   workflow_dispatch:
-    inputs:
-      image_tag:
-        description: "Docker image tag to deploy (leave blank to use current commit SHA)"
-        required: false
-        default: ""
   push:
     branches:
       - main
@@ -30,14 +25,9 @@ jobs:
       image_tag: ${{ steps.set_tag.outputs.image_tag }}
 
     steps:
-      - name: Determine image tag
+      - name: Set image tag
         id: set_tag
-        run: |
-          if [ -n "${{ github.event.inputs.image_tag }}" ]; then
-            echo "image_tag=${{ github.event.inputs.image_tag }}" >> $GITHUB_OUTPUT
-          else
-            echo "image_tag=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
-          fi
+        run: echo "image_tag=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
 
   test-ssh-connection:
     runs-on: ubuntu-latest
@@ -90,5 +80,5 @@ jobs:
           ssh -i private_key.pem -o StrictHostKeyChecking=no \
           ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "
             chmod +x /home/ec2-user/deploy.sh &&
-            /home/ec2-user/deploy.sh ${{ secrets.DOCKERHUB_USERNAME }}/standardized-cicd-app:${{ needs.prepare-release.outputs.image_tag }}
+            /home/ec2-user/deploy.sh ${{ secrets.DOCKERHUB_USERNAME }}/standardized-cicd-app:${GITHUB_SHA::7}
           "
